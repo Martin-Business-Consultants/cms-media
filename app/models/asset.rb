@@ -15,6 +15,7 @@ class Asset < ApplicationRecord
   include Trashable
   include Referenced
   include Renditions
+  include Delivery
   include Filterable
 
   # `folder` is a virtual filesystem path used by the file manager UI.

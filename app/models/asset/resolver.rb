@@ -132,22 +132,9 @@ module Asset::Resolver
     end
   end
 
+  # What a site needs to render it: absolute URLs on the CMS's host, size,
+  # renditions (Asset::Delivery).
   def summary_for(asset)
-    summary = {
-      "id"           => asset.id,
-      "url"          => asset.url,
-      "filename"     => asset.filename,
-      "content_type" => asset.content_type,
-      "byte_size"    => asset.byte_size,
-      "folder"       => asset.folder,
-      "alt"          => asset.alt
-    }
-    if asset.content_type.to_s.start_with?("image/")
-      summary["srcset"] = asset.srcset
-      summary["thumb_url"] = asset.thumb_url
-      summary["focal_x"] = asset.focal_x
-      summary["focal_y"] = asset.focal_y
-    end
-    summary
+    asset.delivery
   end
 end
