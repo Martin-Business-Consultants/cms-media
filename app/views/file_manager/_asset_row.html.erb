@@ -1,0 +1,21 @@
+<%# locals: (asset:, selectable:, can_delete:) %>
+<tr id="<%= dom_id(asset) %>" data-filter-target="item">
+  <td>
+    <% if selectable %>
+      <input type="checkbox" data-select-all-target="box" data-action="select-all#sync" name="ids[]" value="<%= asset.id %>" form="assets_bulk" aria-label="Select <%= asset.title %>">
+    <% end %>
+  </td>
+  <td>
+    <%= link_to file_manager_asset_path(asset), class: "flex align-center gap-half txt-ink font-weight-bold",
+          data: { turbo_frame: "asset_details", action: "dialog#open" } do %>
+      <span class="file-manager__thumb file-manager__thumb--small"><%= asset_thumbnail asset, size: 64 %></span>
+      <span class="overflow-ellipsis"><%= asset.title %></span>
+    <% end %>
+  <%= render "layouts/shared/row_links", name: asset.title, edit_path: file_manager_asset_path(asset),
+        delete_path: (file_manager_asset_path(asset) if can_delete), delete_message: "It goes to the trash, where it can be restored." %>
+  </td>
+  <td class="txt-subtle txt-small"><%= asset.content_type %></td>
+  <td class="txt-subtle font-mono txt-small"><%= asset.folder %></td>
+  <td class="data-table__number"><%= number_to_human_size(asset.byte_size) %></td>
+  <td class="txt-small"><%= time_ago_tag asset.created_at %></td>
+</tr>

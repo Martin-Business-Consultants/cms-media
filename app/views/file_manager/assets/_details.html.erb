@@ -1,0 +1,90 @@
+<%# locals: (asset:, folders:) %>
+<%# A file's details, as WordPress's Attachment details: the picture, what
+    the file is, its title, alt text, caption, description and folder, and
+    where the site uses it. In the library's sheet (the asset_details frame)
+    and on the file's own page. %>
+<% can_write = Current.user.can?("assets:write") %>
+<% usages = asset.referencing_records %>
+<div class="media-details__body">
+  <% if flash[:notice].present? && turbo_frame_request? %>
+    <p class="notice notice--success txt-small margin-none"><%= flash[:notice] %></p>
+  <% end %>
+
+  <div class="media-details__preview">
+    <% if asset.image? %>
+      <%= image_tag(asset.variantable? && ApplicationHelper.variants_supported? ? asset.thumb_url(1024) : asset.url, alt: asset.alt.to_s) %>
+    <% else %>
+      <%= icon_tag "attachment", class: "file-manager__file-icon" %>
+    <% end %>
+  </div>
+
+  <dl class="file-manager-asset__facts txt-small margin-none">
+    <dt>Uploaded</dt><dd><%= time_ago_tag asset.created_at %></dd>
+    <dt>File name</dt><dd class="font-mono"><%= asset.filename %></dd>
+    <dt>File type</dt><dd><%= asset.content_type %></dd>
+    <dt>File size</dt><dd><%= number_to_human_size(asset.byte_size) %></dd>
+    <% if asset.file.metadata["width"] %>
+      <dt>Dimensions</dt><dd><%= asset.file.metadata["width"] %> × <%= asset.file.metadata["height"] %> pixels</dd>
+    <% end %>
+  </dl>
+
+  <div class="flex flex-wrap align-center gap-half">
+    <button type="button" class="btn txt-small" data-controller="copy-to-clipboard" data-copy-to-clipboard-content-value="<%= asset.url %>"
+      data-copy-to-clipboard-success-class="btn--success" data-action="copy-to-clipboard#copy">
+      <%= icon_tag "copy-paste" %>
+      <span>Copy URL</span>
+    </button>
+    <%= link_to rails_blob_path(asset.file, disposition: "attachment"), class: "btn txt-small", data: { turbo: false } do %>
+      <span>Download</span>
+    <% end %>
+    <% if Current.user.can?("assets:delete") %>
+      <%= render "layouts/shared/delete_dialog", name: asset.title, path: file_manager_asset_path(asset),
+            message: "It goes to the trash, where it can be restored.", trigger_text: "Delete permanently" %>
+    <% end %>
+  </div>
+
+  <%= render "layouts/shared/errors", record: asset %>
+  <%= form_with model: asset, url: file_manager_asset_path(asset), scope: :asset, class: "flex flex-column gap" do |form| %>
+    <%= tag.fieldset class: "settings-fieldset flex flex-column gap", disabled: !can_write do %>
+      <label class="flex flex-column gap-half">
+        <span class="txt-small font-weight-bold">Alternative text</span>
+        <%= form.text_area :alt, rows: 2, class: "input full-width", placeholder: "What the image shows, for people who can’t see it." %>
+        <span class="txt-x-small txt-subtle">Read aloud by screen readers, and shown when the image can’t load. Leave it empty if the image is purely decorative.</span>
+      </label>
+      <label class="flex flex-column gap-half">
+        <span class="txt-small font-weight-bold">Title</span>
+        <%= form.text_field :name, placeholder: asset.filename, class: "input full-width", autocomplete: "off" %>
+      </label>
+      <label class="flex flex-column gap-half">
+        <span class="txt-small font-weight-bold">Caption</span>
+        <%= form.text_area :caption, rows: 2, class: "input full-width" %>
+        <span class="txt-x-small txt-subtle">Shown with it on the site, where the site shows captions.</span>
+      </label>
+      <label class="flex flex-column gap-half">
+        <span class="txt-small font-weight-bold">Description</span>
+        <%= form.text_area :description, rows: 3, class: "input full-width" %>
+      </label>
+      <label class="flex flex-column gap-half">
+        <span class="txt-small font-weight-bold">Folder</span>
+        <%= form.select :folder, options_for_select([["Top level", "/"]] + folders.map { [it, it] }, asset.folder), {}, class: "input input--select full-width" %>
+      </label>
+      <div class="media-details__save">
+        <%= form.button "Save", class: "btn btn--link" %>
+      </div>
+    <% end %>
+  <% end %>
+
+  <section class="flex flex-column gap-half">
+    <h3 class="divider txt-medium">Used in</h3>
+    <% if usages.any? %>
+      <ul class="margin-none txt-small">
+        <% usages.each do |record| %>
+          <%# herb:key record.class.name + record.id.to_s %>
+          <li><%= link_to record.try(:title).presence || record.try(:slug) || record.class.name, admin_record_path(record), class: "txt-link", data: { turbo_frame: "_top" } %> <span class="txt-subtle"><%= record.class.model_name.human %></span></li>
+        <% end %>
+      </ul>
+    <% else %>
+      <p class="txt-small txt-subtle margin-none">Nothing on the site uses it yet.</p>
+    <% end %>
+  </section>
+</div>

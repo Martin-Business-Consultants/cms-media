@@ -1,0 +1,33 @@
+<%# locals: (folders:, can_write:, can_delete:) %>
+<%# Moving or deleting the ticked files. The tiles' and rows' checkboxes join
+    this form with form="assets_bulk". In the grid it shows only in Bulk
+    select (file-manager.css). %>
+<%= form_with url: can_write ? file_manager_moves_path : file_manager_bulk_deletions_path, id: "assets_bulk",
+      class: "media-bulk-actions" do %>
+  <% if can_write %>
+    <label class="flex align-center gap-half txt-small">
+      <span>Move the ticked files to</span>
+      <%= select_tag :to, options_for_select([["All files (top level)", "/"]] + folders.map { [it, it] }), class: "input input--select txt-small", id: nil %>
+    </label>
+    <button type="submit" class="btn txt-small" formaction="<%= file_manager_moves_path %>">Move</button>
+  <% end %>
+  <% if can_delete %>
+    <div class="display-contents" data-controller="dialog" data-dialog-modal-value="true" data-action="keydown.esc->dialog#close:stop">
+      <button type="button" class="btn txt-small txt-negative" data-action="dialog#open">
+        <%= icon_tag "trash" %>
+        <span>Delete ticked</span>
+      </button>
+      <dialog class="dialog dialog--action panel fill-white shadow gap flex-column txt-align-start" data-dialog-target="dialog">
+        <h3 class="txt-large font-weight-bold margin-none">Delete the ticked files?</h3>
+        <p class="txt-medium margin-block-half">They go to the trash, where they can be restored.</p>
+        <div class="flex gap-half justify-center margin-block-start">
+          <button type="button" class="btn" data-action="dialog#close">Cancel</button>
+          <button type="submit" class="btn txt-negative" formaction="<%= file_manager_bulk_deletions_path %>">
+            <%= icon_tag "trash" %>
+            <span>Delete</span>
+          </button>
+        </div>
+      </dialog>
+    </div>
+  <% end %>
+<% end %>

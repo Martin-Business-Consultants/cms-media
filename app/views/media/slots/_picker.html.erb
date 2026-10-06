@@ -1,0 +1,14 @@
+<%# locals: () %>
+<%# One picker for every asset field on the page. It loads the library the
+    first time it opens (a lazy frame) and hands the chosen asset to the
+    field that opened it. %>
+<dialog id="asset_picker_dialog" class="dialog dialog--sheet panel fill-white shadow flex-column gap txt-align-start content-picker content-picker--assets"
+        aria-label="Choose a file" data-controller="media--asset-picker" closedby="any">
+  <header class="flex align-center justify-space-between gap">
+    <h2 class="txt-large font-weight-bold margin-none">Choose a file</h2>
+    <button type="button" class="btn txt-small" data-action="media--asset-picker#close">Close</button>
+  </header>
+  <turbo-frame id="asset_picker" src="<%= asset_picker_path %>" loading="lazy">
+    <p class="txt-small txt-subtle">Loading…</p>
+  </turbo-frame>
+</dialog>

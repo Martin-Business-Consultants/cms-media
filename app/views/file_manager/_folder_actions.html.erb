@@ -1,0 +1,34 @@
+<%# locals: (folder:, can_delete:) %>
+<%# Making a folder inside this one; renaming or deleting this one. %>
+<div class="file-manager__folder-actions flex flex-wrap align-center gap-half">
+  <details class="file-manager__inline-form">
+    <summary class="btn txt-small">
+      <%= icon_tag "add" %>
+      <span>New folder</span>
+    </summary>
+    <%= form_with url: file_manager_folder_path, class: "flex align-center gap-half margin-block-start-half", namespace: "new_folder" do |form| %>
+      <%= form.hidden_field :parent, value: folder %>
+      <%= form.text_field :name, required: true, placeholder: "e.g. Logos", class: "input txt-small", autocomplete: "off", aria: { label: "Folder name" } %>
+      <button type="submit" class="btn txt-small">Create</button>
+    <% end %>
+  </details>
+
+  <% if folder != "/" %>
+    <details class="file-manager__inline-form">
+      <summary class="btn txt-small">
+        <%= icon_tag "pencil" %>
+        <span>Rename folder</span>
+      </summary>
+      <%= form_with url: file_manager_folder_path, method: :patch, class: "flex align-center gap-half margin-block-start-half", namespace: "rename_folder" do |form| %>
+        <%= form.hidden_field :path, value: folder %>
+        <%= form.text_field :name, value: AssetFolders.name(folder), required: true, class: "input txt-small", autocomplete: "off", aria: { label: "New name" } %>
+        <button type="submit" class="btn txt-small">Rename</button>
+      <% end %>
+    </details>
+    <% if can_delete %>
+      <%= render "layouts/shared/delete_dialog", name: "folder " + AssetFolders.name(folder),
+            path: file_manager_folder_path(path: folder),
+            message: "Every file in it, and in the folders inside it, goes to the trash." %>
+    <% end %>
+  <% end %>
+</div>

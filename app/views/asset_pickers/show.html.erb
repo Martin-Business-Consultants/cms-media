@@ -1,0 +1,58 @@
+<%# The asset picker's contents, inside the dialog every content form carries
+    (content_form/asset_picker). Links and forms stay in the frame; picking an
+    asset hands it to the field that opened the picker (media--asset-picker#pick). %>
+<turbo-frame id="asset_picker">
+  <div class="asset-picker flex flex-column gap">
+    <div class="flex flex-wrap align-center gap-half">
+      <%= form_with url: asset_picker_path, method: :get, class: "flex align-center gap-half flex-item-grow" do %>
+        <%= search_field_tag :q, @query, id: nil, class: "input flex-item-grow", placeholder: "Search every folder…", autocomplete: "off",
+              aria: { label: "Search files" } %>
+        <button type="submit" class="btn txt-small">Search</button>
+      <% end %>
+      <%= form_with url: asset_picker_path, method: :get, data: { controller: "form" } do %>
+        <%= select_tag :folder, options_for_select(@folders, @folder), id: nil, class: "input input--select", aria: { label: "Folder" },
+              data: { action: "change->form#submit" } %>
+      <% end %>
+    </div>
+
+    <%= form_with url: asset_picker_path, class: "asset-picker__upload flex align-center gap-half", data: { controller: "form media--direct-upload" } do |form| %>
+      <%= form.hidden_field :folder, value: @folder, id: nil %>
+      <label class="btn txt-small" title="Upload into this folder">
+        <%= icon_tag "add" %>
+        <span>Upload into <%= @folder %></span>
+        <%= form.file_field :files, multiple: true, direct_upload: true, hidden: true,
+              data: { action: "change->form#submit", media__direct_upload_target: "input" } %>
+      </label>
+      <ul class="file-manager__progress margin-none" data-media--direct-upload-target="list" hidden></ul>
+    <% end %>
+
+    <% if @upload_errors.present? %>
+      <ul class="txt-small txt-negative margin-none">
+        <% @upload_errors.each do |message| %>
+          <%# herb:key message %>
+          <li><%= message %></li>
+        <% end %>
+      </ul>
+    <% end %>
+
+    <% if @assets.any? %>
+      <ul class="asset-picker__grid">
+        <% @assets.each do |asset| %>
+          <%# herb:key asset.id %>
+          <li>
+            <button type="button" class="asset-picker__asset txt-align-start"
+                    data-action="media--asset-picker#pick" data-asset-id="<%= asset.id %>" data-asset-name="<%= asset.title %>"
+                    title="<%= asset.title %>">
+              <span class="asset-picker__thumb"><%= asset_thumbnail asset, size: 240 %></span>
+              <span class="txt-x-small overflow-ellipsis"><%= asset.title %></span>
+            </button>
+          </li>
+        <% end %>
+      </ul>
+    <% else %>
+      <p class="txt-small txt-subtle margin-none">
+        <%= @query.present? ? "Nothing matches “#{@query}”." : "This folder is empty." %>
+      </p>
+    <% end %>
+  </div>
+</turbo-frame>

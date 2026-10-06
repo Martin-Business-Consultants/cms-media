@@ -1,0 +1,379 @@
+@layer components {
+  /* The media library, as WordPress's: one toolbar, then a grid of squares
+     (or a list), and a file's details in a sheet. */
+  .media-library {
+    display: flex;
+    flex-direction: column;
+    gap: var(--block-space);
+    text-align: start;
+  }
+
+  .media-toolbar {
+    --panel-padding: 0.6rem var(--inline-space);
+    --panel-size: 100%;
+
+    align-items: center;
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--inline-space-half) var(--inline-space);
+  }
+
+  .media-toolbar__filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--inline-space-half);
+
+    .input--select {
+      inline-size: auto;
+    }
+  }
+
+  .media-toolbar__search {
+    align-items: center;
+    display: flex;
+    gap: var(--inline-space-half);
+    margin-inline-start: auto;
+
+    .input {
+      inline-size: min(18rem, 60vw);
+    }
+  }
+
+  /* Bulk select: a checkbox dressed as a button; ticked, it shows the ticks
+     and the bulk actions, and each square becomes its own tick. */
+  .media-toolbar__bulk {
+    cursor: pointer;
+  }
+
+  .media-toolbar__bulk-off,
+  .media-library:has([data-media-bulk]:checked) .media-toolbar__bulk-on {
+    display: none;
+  }
+
+  .media-library:has([data-media-bulk]:checked) .media-toolbar__bulk-off {
+    display: inline;
+  }
+
+  .media-bulk-actions {
+    align-items: center;
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--inline-space-half);
+    justify-content: end;
+  }
+
+  .media-library:has([data-media-bulk]:not(:checked)) .media-bulk-actions {
+    display: none;
+  }
+
+  .media-grid {
+    display: grid;
+    gap: var(--inline-space);
+    grid-template-columns: repeat(auto-fill, minmax(9rem, 1fr));
+  }
+
+  /* The pagination frames the grid loads into lay their squares out in it. */
+  .media-grid turbo-frame {
+    display: contents;
+  }
+
+  .media-tile {
+    aspect-ratio: 1;
+    background-color: var(--color-ink-lightest);
+    box-shadow: inset 0 0 0 1px oklch(0% 0 0 / 0.08), 0 1px 2px oklch(0% 0 0 / 0.08);
+    position: relative;
+
+    &:hover,
+    &:focus-within {
+      outline: 3px solid var(--color-link);
+      outline-offset: 1px;
+    }
+
+    &:has(.media-tile__tick:checked) {
+      outline: 3px solid var(--color-link);
+    }
+  }
+
+  .media-tile__link {
+    align-items: center;
+    color: var(--color-ink);
+    display: flex;
+    flex-direction: column;
+    inset: 0;
+    justify-content: center;
+    overflow: hidden;
+    position: absolute;
+    text-decoration: none;
+  }
+
+  .media-tile__thumb {
+    align-items: center;
+    display: flex;
+    flex: 1;
+    inline-size: 100%;
+    justify-content: center;
+    min-block-size: 0;
+
+    img {
+      block-size: 100%;
+      inline-size: 100%;
+      object-fit: cover;
+    }
+  }
+
+  .media-tile__name {
+    background-color: var(--color-canvas);
+    font-size: var(--text-x-small);
+    font-weight: 600;
+    inline-size: 100%;
+    overflow-wrap: anywhere;
+    padding: 0.4em 0.5em;
+    text-align: center;
+  }
+
+  /* In Bulk select only: the whole square, above the link, is the tick. */
+  .media-tile__select {
+    cursor: pointer;
+    display: none;
+    inset: 0;
+    position: absolute;
+    z-index: 1;
+
+    .media-library:has([data-media-bulk]:checked) & {
+      display: block;
+    }
+  }
+
+  .media-tile__tick {
+    inset: 0.5em 0.5em auto auto;
+    position: absolute;
+  }
+
+  /* The grid with no files: one quiet line, like an empty table's row. */
+  .media-library__empty {
+    color: var(--color-ink-dark);
+    padding: 1.5em 0.75em;
+    text-align: start;
+  }
+
+  .media-library__count {
+    margin: 0;
+    text-align: center;
+  }
+
+  /* A file's details: in the sheet, or on its own page. */
+  .media-details__body {
+    display: flex;
+    flex-direction: column;
+    gap: var(--block-space);
+  }
+
+  .media-details__save {
+    margin-block-end: var(--block-space);
+  }
+
+  /* The sheet scrolls; its last section keeps clear of the bottom edge. */
+  .media-details .media-details__body {
+    padding-block-end: var(--block-space);
+  }
+
+  .media-details__preview {
+    align-items: center;
+    background-color: var(--color-ink-lightest);
+    border-radius: var(--radius);
+    display: flex;
+    justify-content: center;
+    min-block-size: 12rem;
+    padding: var(--block-space-half);
+
+    img {
+      max-block-size: 50dvh;
+      max-inline-size: 100%;
+      object-fit: contain;
+    }
+  }
+
+  .media-details-page {
+    --panel-size: 100%;
+
+    margin-inline: auto;
+    max-inline-size: 60rem;
+  }
+
+  .file-manager__folders {
+    display: grid;
+    gap: var(--inline-space);
+    grid-template-columns: repeat(auto-fill, minmax(10rem, 1fr));
+    list-style: none;
+    padding-inline: 0;
+  }
+
+  .file-manager__folder {
+    align-items: center;
+    background-color: var(--color-canvas);
+    border: var(--border);
+    border-radius: var(--radius);
+    color: var(--color-ink);
+    display: flex;
+    gap: var(--inline-space-half);
+    padding: 0.5em 0.75em;
+    text-decoration: none;
+
+    &:hover { border-color: var(--color-link); }
+  }
+
+  .file-manager__thumb {
+    align-items: center;
+    aspect-ratio: 4 / 3;
+    background-color: var(--color-ink-lightest);
+    display: flex;
+    justify-content: center;
+    overflow: hidden;
+
+    img {
+      block-size: 100%;
+      inline-size: 100%;
+      object-fit: cover;
+    }
+  }
+
+  .file-manager__thumb--small {
+    aspect-ratio: 1;
+    border-radius: var(--radius);
+    flex-shrink: 0;
+    inline-size: 2.5rem;
+  }
+
+  .file-manager__file-icon {
+    --icon-size: 2.5rem;
+
+    color: var(--color-ink-dark);
+  }
+
+  .file-manager__upload {
+    position: relative;
+  }
+
+  .file-manager__upload,
+  .file-manager__zip {
+    align-items: center;
+    display: flex;
+  }
+
+  .file-manager__zip {
+    position: relative;
+
+    .popup {
+      inset: calc(100% + var(--block-space-half)) 0 auto auto;
+      min-inline-size: min(40ch, calc(100vw - 2rem));
+      position: absolute;
+      z-index: 2;
+    }
+  }
+
+  .file-manager__progress {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25em;
+    list-style: none;
+    padding-inline: 0;
+  }
+
+  .file-manager__upload .file-manager__progress {
+    background-color: var(--color-canvas);
+    border: var(--border);
+    border-radius: var(--radius);
+    inset: calc(100% + var(--block-space-half)) 0 auto auto;
+    min-inline-size: 18rem;
+    padding: 0.5em;
+    position: absolute;
+    z-index: 2;
+  }
+
+  .file-manager__progress-item {
+    display: grid;
+    gap: 0.5em;
+    grid-template-columns: 1fr 6rem;
+  }
+
+  .file-manager__progress-item--failed { color: var(--color-negative); }
+
+  .file-manager__inline-form[open] {
+    flex-basis: 100%;
+  }
+
+  .file-manager-asset__facts {
+    display: grid;
+    gap: 0.25em 1em;
+    grid-template-columns: max-content 1fr;
+
+    dt { color: var(--color-ink-dark); }
+    dd { margin: 0; overflow-wrap: anywhere; }
+  }
+}
+
+/* Dropping files on the file manager (file_drop_controller). */
+@layer components {
+  .file-drop {
+    position: relative;
+  }
+
+  .file-drop__overlay {
+    align-items: center;
+    background: color-mix(in oklch, var(--color-link) 12%, transparent);
+    border: 2px dashed var(--color-link);
+    border-radius: var(--radius);
+    display: flex;
+    inset: 0;
+    justify-content: center;
+    pointer-events: none;
+    position: absolute;
+    z-index: 5;
+
+    &[hidden] { display: none; }
+  }
+
+  .file-drop__overlay-text {
+    background: var(--color-canvas);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: var(--block-space-half) var(--block-space);
+  }
+
+  .file-drop__ready {
+    align-items: center;
+    border: 2px dashed var(--color-ink-light);
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--block-space);
+    justify-content: space-between;
+    margin-block-end: var(--block-space);
+  }
+
+  /* The library's drop zone, as WordPress's uploader: centred, dashed. */
+  .media-dropzone {
+    border-radius: var(--radius);
+    flex-direction: column;
+    gap: var(--block-space-half);
+    justify-content: center;
+    padding: var(--block-space) var(--inline-space);
+    text-align: center;
+
+    p {
+      display: flex;
+      flex-direction: column;
+      gap: 0.2em;
+    }
+  }
+
+  .media-dropzone__icon {
+    --icon-size: 2rem;
+
+    color: var(--color-ink-dark);
+  }
+
+  .file-drop__folder--over {
+    background: color-mix(in oklch, var(--color-link) 16%, transparent);
+    outline: 2px solid var(--color-link);
+  }
+}

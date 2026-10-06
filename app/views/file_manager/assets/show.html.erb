@@ -1,0 +1,12 @@
+<% @page_title = @asset.title %>
+<%= parent_page "Media Library", file_manager_path %>
+
+<%= render "layouts/shared/page_header", title: "Attachment details" %>
+
+<%# The details alone, at the file's own address; picked in the library, the
+    same frame loads into its sheet instead. %>
+<section class="panel shadow media-details-page txt-align-start">
+  <turbo-frame id="asset_details">
+    <%= render "file_manager/assets/details", asset: @asset, folders: @folders %>
+  </turbo-frame>
+</section>

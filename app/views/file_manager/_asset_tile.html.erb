@@ -1,0 +1,20 @@
+<%# locals: (asset:, selectable:) %>
+<%# One file in the library's grid, as WordPress shows it: a square of the
+    picture (or, for any other file, its icon and name). Picking it opens its
+    details in the library's sheet; in Bulk select, the square is its tick. %>
+<div id="<%= dom_id(asset) %>" class="media-tile" data-filter-target="item">
+  <%= link_to file_manager_asset_path(asset), class: "media-tile__link", title: asset.title,
+        data: { turbo_frame: "asset_details", action: "dialog#open" } do %>
+    <span class="media-tile__thumb"><%= asset_thumbnail asset, size: 320 %></span>
+    <% unless asset.image? %>
+      <span class="media-tile__name"><%= asset.filename %></span>
+    <% end %>
+    <span class="for-screen-reader"><%= asset.title %></span>
+  <% end %>
+  <% if selectable %>
+    <label class="media-tile__select">
+      <input type="checkbox" name="ids[]" value="<%= asset.id %>" form="assets_bulk" class="media-tile__tick">
+      <span class="for-screen-reader">Select <%= asset.title %></span>
+    </label>
+  <% end %>
+</div>
