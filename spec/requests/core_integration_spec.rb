@@ -124,17 +124,16 @@ RSpec.describe "Media in the core", type: :request do
     end
   end
 
-  it "resolves a preview draft's assets" do
+  it "includes a page's assets in the delivery API, with absolute URLs" do
     BlockType.seed
     asset = Asset.create!(name: "pic.png", folder: "/", file: {io: StringIO.new("x"), filename: "pic.png", content_type: "image/png"})
-    Page.create!(slug: "home", title: "Home", status: "published")
+    Page.create!(slug: "home", title: "Home", status: "published", blocks: [{"id" => "b1", "type" => "image", "data" => {"asset_id" => asset.id.to_s, "alt" => "a"}}])
 
-    post "/api/preview_drafts", params: {page_slug: "home", title: "Draft", blocks: [{id: "b1", type: "image", data: {asset_id: asset.id, alt: "a"}}]},
-      headers: api_for(admin), as: :json
-    get "/api/preview_drafts/#{json["token"]}?resolve=assets"
+    get "/api/v1/pages/home", headers: api_for(admin)
 
-    expect(json["assets"].keys).to eq([asset.id.to_s])
-    expect(json.dig("assets", asset.id.to_s, "filename")).to eq("pic.png")
+    expect(json.dig("included", "assets").keys).to eq([asset.id.to_s])
+    expect(json.dig("included", "assets", asset.id.to_s)).to include("filename" => "pic.png")
+    expect(json.dig("included", "assets", asset.id.to_s, "url")).to start_with("http://example.com/")
   end
 
   it "records a folder rename by its normalized paths from both" do
