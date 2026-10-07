@@ -24,13 +24,14 @@ export default class extends Controller {
     const { id, file } = event.detail
     const item = document.createElement("li")
     item.id = `direct-upload-${id}`
-    item.className = "file-manager__progress-item"
+    item.className = "flex items-center gap-2"
 
     const name = document.createElement("span")
-    name.className = "overflow-ellipsis txt-x-small"
+    name.className = "min-w-0 flex-1 truncate"
     name.textContent = file.name
 
     const bar = document.createElement("progress")
+    bar.className = "w-24 shrink-0"
     bar.max = 100
     bar.value = 0
 
@@ -48,13 +49,14 @@ export default class extends Controller {
     event.preventDefault()
     const item = this.#item(event)
     if (item) {
-      item.classList.add("file-manager__progress-item--failed")
+      item.classList.add("text-red-600")
       item.title = event.detail.error
     }
   }
 
   #end = (event) => {
-    this.#item(event)?.classList.add("file-manager__progress-item--done")
+    const bar = this.#item(event)?.querySelector("progress")
+    if (bar) bar.value = 100
   }
 
   #item(event) {

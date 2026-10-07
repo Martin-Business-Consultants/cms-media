@@ -1,7 +1,9 @@
 <% @page_title = "Media Library" %>
 <% can_write = Current.user.can?("assets:write") %>
 <% can_delete = Current.user.can?("assets:delete") %>
+<% ticks = can_write || can_delete %>
 <% upload_folder = @folder || "/" %>
+<% upload_place = upload_folder == "/" ? "the top level" : upload_folder %>
 
 <% if can_write %>
   <% content_for :page_actions do %>
@@ -9,61 +11,78 @@
   <% end %>
 <% end %>
 <% drop_data = can_write ? { controller: "media--file-drop", action: "dragenter->media--file-drop#enter dragover->media--file-drop#over dragleave->media--file-drop#leave drop->media--file-drop#drop" } : {} %>
-<%= tag.div class: "file-drop", data: drop_data do %>
-<%= render "layouts/shared/page_header", title: "Media Library" %>
+<%= tag.div class: "relative", data: drop_data do %>
+<%= render "layouts/shared/page_header", title: "Media Library", description: "Every file the site uses: images, documents and the rest, in folders." %>
 
 <% if can_write %>
-  <div class="file-drop__overlay" data-media--file-drop-target="overlay" hidden>
-    <p class="file-drop__overlay-text">Drop files to upload them into <strong><%= upload_folder == "/" ? "the top level" : upload_folder %></strong>, or onto a folder.</p>
+  <div class="file-drop__overlay pointer-events-none absolute inset-0 z-30 items-center justify-center rounded-xl border-2 border-dashed border-blue-600" data-media--file-drop-target="overlay" hidden>
+    <p class="rounded-lg border border-gray-200 bg-white px-4 py-3 text-sm text-gray-900 shadow-overlay">Drop files to upload them into <strong class="font-semibold"><%= upload_place %></strong>, or onto a folder.</p>
   </div>
-  <p class="notice txt-small" data-media--file-drop-target="message" hidden></p>
-  <%# The drop zone, always there, as WordPress's uploader is; a drop
-      anywhere on the page works too. Focused when "+ New › Media" led here. %>
-  <section class="file-drop__ready media-dropzone txt-align-start" aria-label="Upload files" data-drop-folder="<%= upload_folder %>">
-    <%= icon_tag "picture-add", class: "media-dropzone__icon" %>
-    <p class="margin-none">
-      <strong>Drop files to upload</strong>
-      <span class="txt-small txt-subtle">into <%= upload_folder == "/" ? "the top level" : upload_folder %>. A zip of images, dropped on its own, is unpacked.</span>
+  <p class="<%= ui(:notice, :yellow, "mb-4") %>" data-media--file-drop-target="message" hidden></p>
+  <%# The drop zone, always there, as Payload's and WordPress's uploaders are;
+      a drop anywhere on the page works too. Focused when "+ New › Media" led
+      here. %>
+  <section class="mb-6 flex flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed border-gray-300 bg-gray-50 px-6 py-6 text-center"
+           aria-label="Upload files" data-drop-folder="<%= upload_folder %>">
+    <span class="flex h-10 w-10 items-center justify-center rounded-full border border-gray-200 bg-white text-gray-500">
+      <%= icon_tag "picture-add", class: "size-5" %>
+    </span>
+    <p class="flex flex-col gap-1">
+      <strong class="text-sm font-medium text-gray-900">Drop files to upload</strong>
+      <span class="text-xs text-gray-500">into <%= upload_place %>. A zip of images, dropped on its own, is unpacked.</span>
     </p>
-    <%= tag.button "Select files", type: "button", class: "btn btn--link", autofocus: params[:upload].present?, data: { action: "media--file-drop#choose" } %>
+    <%= tag.button "Select files", type: "button", class: ui(:button, :small), autofocus: params[:upload].present?, data: { action: "media--file-drop#choose" } %>
   </section>
 <% end %>
 
-<%# The library, as WordPress lays it out: one toolbar (the view, the filters,
-    Bulk select, search), then every file as a square, or a list. Picking one
-    opens its details in a sheet (file_manager/assets#show, into the
-    asset_details frame). Bulk select turns the squares into ticks. %>
-<div class="media-library" data-controller="dialog" data-dialog-modal-value="true" data-action="keydown.esc->dialog#close:stop">
-  <div class="media-toolbar panel shadow">
-    <%= render "layouts/shared/view_toggle", current: @view %>
+<%# The library, as Payload's media collection lays it out: one toolbar (search,
+    the filters, Bulk select, grid or list), then every file as a square, or a
+    list. Picking one opens its details in a sheet (file_manager/assets#show,
+    into the asset_details frame). Bulk select turns the squares into ticks. %>
+<div class="media-library flex flex-col gap-4" data-controller="dialog" data-dialog-modal-value="true" data-action="keydown.esc->dialog#close:stop">
+  <div class="flex flex-wrap items-center gap-2">
+    <%= form_with url: file_manager_path, method: :get, class: "relative w-full sm:w-auto sm:flex-1", data: { turbo_action: "replace" } do |form| %>
+      <%= form.hidden_field :view, value: @view, id: nil %>
+      <%= form.hidden_field :kind, value: @kind, id: nil if @kind %>
+      <%= form.hidden_field :month, value: @month, id: nil if @month %>
+      <%= form.hidden_field :folder, value: @folder, id: nil if @folder %>
+      <label for="media_search" class="sr-only">Search</label>
+      <%= icon_tag "search", class: "pointer-events-none absolute left-2.5 top-2 size-4 text-gray-400" %>
+      <%= form.search_field :q, value: @query, id: "media_search", class: "w-full pl-8", placeholder: "Search by name…", autocomplete: "off" %>
+    <% end %>
 
-    <%= form_with url: file_manager_path, method: :get, class: "media-toolbar__filters", data: { controller: "form", turbo_action: "replace" } do %>
+    <%= form_with url: file_manager_path, method: :get, class: "flex flex-wrap items-center gap-2", data: { controller: "form", turbo_action: "replace" } do %>
       <%= hidden_field_tag :view, @view, id: nil %>
       <%= hidden_field_tag :q, @query, id: nil if @query.present? %>
       <%= select_tag :kind, options_for_select([ [ "All media items", "" ] ] + Asset::Filterable::KINDS.map { |key, label| [ label, key ] }, @kind),
-            class: "input input--select txt-small", id: nil, aria: { label: "Kind of file" }, data: { action: "change->form#submit" } %>
+            id: nil, aria: { label: "Kind of file" }, data: { action: "change->form#submit" } %>
       <%= select_tag :month, options_for_select([ [ "All dates", "" ] ] + @months.map { [ Date.strptime(it, "%Y-%m").strftime("%B %Y"), it ] }, @month),
-            class: "input input--select txt-small", id: nil, aria: { label: "Month added" }, data: { action: "change->form#submit" } %>
+            id: nil, aria: { label: "Month added" }, data: { action: "change->form#submit" } %>
       <%= select_tag :folder, options_for_select([ [ "All folders", "" ], [ "Top level", "/" ] ] + @folders.map { [ it, it ] }, @folder),
-            class: "input input--select txt-small", id: nil, aria: { label: "Folder" }, data: { action: "change->form#submit" } %>
+            id: nil, aria: { label: "Folder" }, data: { action: "change->form#submit" } %>
     <% end %>
 
-    <% if @view == "cards" && @assets.any? && (can_write || can_delete) %>
-      <label class="btn txt-small media-toolbar__bulk">
-        <input type="checkbox" class="for-screen-reader" data-media-bulk>
+    <% if @view == "cards" && @assets.any? && ticks %>
+      <label class="<%= ui(:button, "cursor-pointer") %>">
+        <input type="checkbox" class="sr-only" data-media-bulk>
         <span class="media-toolbar__bulk-on">Bulk select</span>
         <span class="media-toolbar__bulk-off">Cancel</span>
       </label>
     <% end %>
 
-    <%= form_with url: file_manager_path, method: :get, class: "media-toolbar__search", data: { turbo_action: "replace" } do |form| %>
-      <%= form.hidden_field :view, value: @view, id: nil %>
-      <%= form.hidden_field :kind, value: @kind, id: nil if @kind %>
-      <%= form.hidden_field :month, value: @month, id: nil if @month %>
-      <%= form.hidden_field :folder, value: @folder, id: nil if @folder %>
-      <label for="media_search" class="txt-small">Search</label>
-      <%= form.search_field :q, value: @query, id: "media_search", class: "input txt-small", autocomplete: "off" %>
-    <% end %>
+    <%# Grid or list, keeping the other filters; V switches. %>
+    <nav class="inline-flex items-center gap-0.5 rounded-md border border-gray-300 bg-white p-0.5" aria-label="View">
+      <% [ [ "cards", "Grid", "grid" ], [ "table", "List", "menu" ] ].each do |key, view_label, icon| %>
+        <%# herb:key key %>
+        <% current = key == @view %>
+        <%= link_to url_for(request.query_parameters.except("page").merge("view" => key)),
+              class: class_names("inline-flex h-7 w-7 items-center justify-center rounded-sm", current ? "bg-gray-100 text-gray-900" : "text-gray-500 hover:text-gray-900"),
+              title: view_label, aria: { current: ("page" if current) }, data: { keys: ("v" unless current) } do %>
+          <%= icon_tag icon, class: "size-4" %>
+          <span class="sr-only"><%= view_label %></span>
+        <% end %>
+      <% end %>
+    </nav>
   </div>
 
   <% if can_write && @query.blank? %>
@@ -71,13 +90,14 @@
   <% end %>
 
   <% if @subfolders.any? %>
-    <ul class="file-manager__folders margin-none">
+    <ul class="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6" role="list">
       <% @subfolders.each do |folder| %>
         <%# herb:key folder %>
         <li data-filter-target="item">
-          <%= link_to file_manager_path(folder: folder, view: @view), class: "file-manager__folder", data: { drop_folder: folder } do %>
-            <%= icon_tag "folder" %>
-            <span class="overflow-ellipsis"><%= AssetFolders.name(folder) %></span>
+          <%= link_to file_manager_path(folder: folder, view: @view), class: "flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2.5 text-sm font-medium text-gray-900 hover:border-gray-300 hover:bg-gray-50",
+                data: { drop_folder: folder } do %>
+            <%= icon_tag "folder", class: "size-4 shrink-0 text-gray-400" %>
+            <span class="truncate"><%= AssetFolders.name(folder) %></span>
           <% end %>
         </li>
       <% end %>
@@ -90,59 +110,64 @@
              elsif @subfolders.any? then "No files in this folder."
              else "No media items yet." + (can_write ? " Upload files, or drop them anywhere here; a zip of images is unpacked." : "")
              end %>
-  <% if @assets.any? && (can_write || can_delete) %>
+  <% if @assets.any? && ticks %>
     <%= render "file_manager/bulk_actions", folders: @folders, can_write: can_write, can_delete: can_delete %>
   <% end %>
 
   <% if @view == "cards" %>
     <% if @assets.any? %>
-      <div class="media-grid">
+      <div class="media-grid grid grid-cols-2 gap-x-4 gap-y-5 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
         <%= with_automatic_pagination :assets_cards, @page do %>
           <% @assets.each do |asset| %>
             <%# herb:key asset.id %>
-            <%= render "file_manager/asset_tile", asset: asset, selectable: can_write || can_delete %>
+            <%= render "file_manager/asset_tile", asset: asset, selectable: ticks %>
           <% end %>
         <% end %>
       </div>
     <% else %>
-      <p class="media-library__empty txt-small margin-none"><%= empty %></p>
+      <p class="rounded-xl border border-gray-200 py-12 text-center text-sm text-gray-500"><%= empty %></p>
     <% end %>
   <% else %>
-    <section class="panel shadow index-table" data-controller="select-all">
-      <table class="data-table" data-controller="pagination" data-pagination-paginate-on-intersection-value="true" data-pagination-discard-frame-value="true">
+    <section class="<%= ui(:panel, "overflow-x-auto") %>" data-controller="select-all">
+      <table class="<%= ui(:table, "data-table") %>" data-controller="pagination" data-pagination-paginate-on-intersection-value="true" data-pagination-discard-frame-value="true">
         <thead>
           <tr>
-            <th class="data-table__check"><% if @assets.any? %><input type="checkbox" aria-label="Select every row" data-select-all-target="all" data-action="select-all#toggle"><% end %></th>
-            <th>File</th>
-            <th>Type</th>
-            <th>Folder</th>
-            <th class="data-table__number">Size</th>
-            <th>Added</th>
+            <% if ticks %>
+              <th class="<%= ui(:th, "data-table__check") %>">
+                <% if @assets.any? %>
+                  <input type="checkbox" aria-label="Select every row" data-select-all-target="all" data-action="select-all#toggle">
+                <% end %>
+              </th>
+            <% end %>
+            <th class="<%= ui(:th) %>">File</th>
+            <th class="<%= ui(:th) %>">Type</th>
+            <th class="<%= ui(:th) %>">Folder</th>
+            <th class="<%= ui(:th, "text-right") %>">Size</th>
+            <th class="<%= ui(:th) %>">Added</th>
           </tr>
         </thead>
         <tbody id="<%= pagination_frame_id_for(:assets_rows, @page.number) %>">
           <% @assets.each do |asset| %>
             <%# herb:key asset.id %>
-            <%= render "file_manager/asset_row", asset: asset, selectable: can_write || can_delete, can_delete: can_delete %>
+            <%= render "file_manager/asset_row", asset: asset, selectable: ticks, can_delete: can_delete %>
           <% end %>
-          <%= table_next_page_row :assets_rows, @page, columns: 6 %>
-          <%= table_empty_row(empty, columns: 6) if @assets.none? %>
+          <%= table_next_page_row :assets_rows, @page, columns: ticks ? 6 : 5 %>
+          <%= table_empty_row(empty, columns: ticks ? 6 : 5) if @assets.none? %>
         </tbody>
       </table>
     </section>
   <% end %>
   <% if @assets.any? %>
-    <p class="media-library__count txt-small txt-subtle"><%= pluralize(@total, "media item") %></p>
+    <p class="text-center text-xs text-gray-500"><%= pluralize(@total, "media item") %></p>
   <% end %>
 
-  <dialog class="dialog dialog--sheet dialog--sheet-half panel fill-white shadow flex-column gap txt-align-start media-details"
-          data-dialog-target="dialog" aria-label="Attachment details" closedby="any">
-    <header class="flex align-center justify-space-between gap">
-      <h2 class="txt-large font-weight-bold margin-none">Attachment details</h2>
-      <button type="button" class="btn txt-small" data-action="dialog#close">Close</button>
+  <dialog class="<%= ui(:sheet, "dialog--sheet-half") %>" data-dialog-target="dialog" aria-label="Attachment details" closedby="any">
+    <header class="flex items-center justify-between gap-4">
+      <h2 class="text-lg font-semibold text-gray-900">Attachment details</h2>
+      <button type="button" class="<%= ui(:button, :small) %>" data-action="dialog#close">Close</button>
     </header>
     <turbo-frame id="asset_details">
-      <p class="txt-small txt-subtle">Loading…</p>
+      <p class="text-sm text-gray-500">Loading…</p>
     </turbo-frame>
   </dialog>
 </div>

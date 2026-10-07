@@ -10,7 +10,7 @@ export default class extends Controller {
         field: this.element.dataset.forField,
         id: asset.dataset.assetId,
         name: asset.dataset.assetName,
-        thumb: asset.querySelector(".asset-picker__thumb")?.innerHTML
+        thumb: asset.querySelector(".media-thumb")?.innerHTML
       }
     }))
     this.close()

@@ -1,33 +1,37 @@
-<%# The asset picker's contents, inside the dialog every content form carries
-    (content_form/asset_picker). Links and forms stay in the frame; picking an
-    asset hands it to the field that opened the picker (media--asset-picker#pick). %>
+<%# The asset picker's contents, inside the sheet every content form carries
+    (media/slots/picker): the library's grid, searched or by folder, and an
+    upload into the folder. Links and forms stay in the frame; picking an
+    asset hands it to the field that opened the picker
+    (media--asset-picker#pick, which copies its .media-thumb). %>
 <turbo-frame id="asset_picker">
-  <div class="asset-picker flex flex-column gap">
-    <div class="flex flex-wrap align-center gap-half">
-      <%= form_with url: asset_picker_path, method: :get, class: "flex align-center gap-half flex-item-grow" do %>
-        <%= search_field_tag :q, @query, id: nil, class: "input flex-item-grow", placeholder: "Search every folder…", autocomplete: "off",
+  <div class="flex flex-col gap-4">
+    <div class="flex flex-wrap items-center gap-2">
+      <%= form_with url: asset_picker_path, method: :get, class: "relative min-w-0 flex-1" do %>
+        <%= icon_tag "search", class: "pointer-events-none absolute left-2.5 top-2 size-4 text-gray-400" %>
+        <%= search_field_tag :q, @query, id: nil, class: "w-full pl-8", placeholder: "Search every folder…", autocomplete: "off",
               aria: { label: "Search files" } %>
-        <button type="submit" class="btn txt-small">Search</button>
       <% end %>
       <%= form_with url: asset_picker_path, method: :get, data: { controller: "form" } do %>
-        <%= select_tag :folder, options_for_select(@folders, @folder), id: nil, class: "input input--select", aria: { label: "Folder" },
+        <%= select_tag :folder, options_for_select(@folders, @folder), id: nil, aria: { label: "Folder" },
               data: { action: "change->form#submit" } %>
       <% end %>
     </div>
 
-    <%= form_with url: asset_picker_path, class: "asset-picker__upload flex align-center gap-half", data: { controller: "form media--direct-upload" } do |form| %>
-      <%= form.hidden_field :folder, value: @folder, id: nil %>
-      <label class="btn txt-small" title="Upload into this folder">
-        <%= icon_tag "add" %>
-        <span>Upload into <%= @folder %></span>
-        <%= form.file_field :files, multiple: true, direct_upload: true, hidden: true,
-              data: { action: "change->form#submit", media__direct_upload_target: "input" } %>
-      </label>
-      <ul class="file-manager__progress margin-none" data-media--direct-upload-target="list" hidden></ul>
+    <% if Current.user.can?("assets:write") %>
+      <%= form_with url: asset_picker_path, class: "relative flex flex-wrap items-center gap-2", data: { controller: "form media--direct-upload" } do |form| %>
+        <%= form.hidden_field :folder, value: @folder, id: nil %>
+        <label class="<%= ui(:button, :small, "cursor-pointer") %>" title="Upload into this folder">
+          <%= icon_tag "add", class: "size-4" %>
+          <span>Upload into <%= @folder %></span>
+          <%= form.file_field :files, multiple: true, direct_upload: true, hidden: true,
+                data: { action: "change->form#submit", media__direct_upload_target: "input" } %>
+        </label>
+        <ul class="flex w-full flex-col gap-1.5 text-xs text-gray-700" data-media--direct-upload-target="list" hidden></ul>
+      <% end %>
     <% end %>
 
     <% if @upload_errors.present? %>
-      <ul class="txt-small txt-negative margin-none">
+      <ul class="<%= ui(:notice, :red, "flex-col") %>">
         <% @upload_errors.each do |message| %>
           <%# herb:key message %>
           <li><%= message %></li>
@@ -36,21 +40,26 @@
     <% end %>
 
     <% if @assets.any? %>
-      <ul class="asset-picker__grid">
+      <ul class="grid grid-cols-2 gap-x-3 gap-y-4 sm:grid-cols-3 lg:grid-cols-4" role="list">
         <% @assets.each do |asset| %>
           <%# herb:key asset.id %>
-          <li>
-            <button type="button" class="asset-picker__asset txt-align-start"
+          <li class="min-w-0">
+            <button type="button" class="media-tile flex w-full flex-col gap-1.5 rounded-lg text-left outline-none"
                     data-action="media--asset-picker#pick" data-asset-id="<%= asset.id %>" data-asset-name="<%= asset.title %>"
                     title="<%= asset.title %>">
-              <span class="asset-picker__thumb"><%= asset_thumbnail asset, size: 240 %></span>
-              <span class="txt-x-small overflow-ellipsis"><%= asset.title %></span>
+              <span class="media-thumb flex aspect-square w-full items-center justify-center overflow-hidden rounded-lg border border-gray-200 bg-gray-50 text-gray-400">
+                <%= asset_thumbnail asset, size: 240 %>
+              </span>
+              <span class="flex min-w-0 flex-col px-0.5">
+                <span class="truncate text-xs font-medium text-gray-900"><%= asset.title %></span>
+                <span class="truncate text-xs text-gray-500"><%= asset_meta(asset) %></span>
+              </span>
             </button>
           </li>
         <% end %>
       </ul>
     <% else %>
-      <p class="txt-small txt-subtle margin-none">
+      <p class="rounded-xl border border-gray-200 py-12 text-center text-sm text-gray-500">
         <%= @query.present? ? "Nothing matches “#{@query}”." : "This folder is empty." %>
       </p>
     <% end %>

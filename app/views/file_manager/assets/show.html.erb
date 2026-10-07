@@ -5,7 +5,7 @@
 
 <%# The details alone, at the file's own address; picked in the library, the
     same frame loads into its sheet instead. %>
-<section class="panel shadow media-details-page txt-align-start">
+<section class="<%= ui(:panel, "max-w-2xl p-6") %>">
   <turbo-frame id="asset_details">
     <%= render "file_manager/assets/details", asset: @asset, folders: @folders %>
   </turbo-frame>

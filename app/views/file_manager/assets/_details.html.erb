@@ -5,86 +5,92 @@
     and on the file's own page. %>
 <% can_write = Current.user.can?("assets:write") %>
 <% usages = asset.referencing_records %>
-<div class="media-details__body">
+<% fact_classes = "flex gap-4 py-1.5" %>
+<div class="flex flex-col gap-6 pb-2">
   <% if flash[:notice].present? && turbo_frame_request? %>
-    <p class="notice notice--success txt-small margin-none"><%= flash[:notice] %></p>
+    <p class="<%= ui(:notice, :green) %>"><%= flash[:notice] %></p>
   <% end %>
 
-  <div class="media-details__preview">
+  <div class="media-details__preview flex min-h-40 items-center justify-center rounded-lg border border-gray-200 bg-gray-50 p-3 text-gray-400">
     <% if asset.image? %>
       <%= image_tag(asset.variantable? && ApplicationHelper.variants_supported? ? asset.thumb_url(1024) : asset.url, alt: asset.alt.to_s) %>
     <% else %>
-      <%= icon_tag "attachment", class: "file-manager__file-icon" %>
+      <%= icon_tag "attachment", class: "size-10" %>
     <% end %>
   </div>
 
-  <dl class="file-manager-asset__facts txt-small margin-none">
-    <dt>Uploaded</dt><dd><%= time_ago_tag asset.created_at %></dd>
-    <dt>File name</dt><dd class="font-mono"><%= asset.filename %></dd>
-    <dt>File type</dt><dd><%= asset.content_type %></dd>
-    <dt>File size</dt><dd><%= number_to_human_size(asset.byte_size) %></dd>
+  <dl class="divide-y divide-gray-100 text-sm">
+    <div class="<%= fact_classes %>"><dt class="w-24 shrink-0 text-gray-500">Uploaded</dt><dd class="min-w-0 text-gray-900"><%= time_ago_tag asset.created_at %></dd></div>
+    <div class="<%= fact_classes %>"><dt class="w-24 shrink-0 text-gray-500">File name</dt><dd class="min-w-0 break-all font-mono text-xs text-gray-900"><%= asset.filename %></dd></div>
+    <div class="<%= fact_classes %>"><dt class="w-24 shrink-0 text-gray-500">File type</dt><dd class="min-w-0 text-gray-900"><%= asset.content_type %></dd></div>
+    <div class="<%= fact_classes %>"><dt class="w-24 shrink-0 text-gray-500">File size</dt><dd class="min-w-0 text-gray-900"><%= number_to_human_size(asset.byte_size) %></dd></div>
     <% if asset.file.metadata["width"] %>
-      <dt>Dimensions</dt><dd><%= asset.file.metadata["width"] %> × <%= asset.file.metadata["height"] %> pixels</dd>
+      <div class="<%= fact_classes %>"><dt class="w-24 shrink-0 text-gray-500">Dimensions</dt><dd class="min-w-0 text-gray-900"><%= asset.file.metadata["width"] %> × <%= asset.file.metadata["height"] %> pixels</dd></div>
     <% end %>
   </dl>
 
-  <div class="flex flex-wrap align-center gap-half">
-    <button type="button" class="btn txt-small" data-controller="copy-to-clipboard" data-copy-to-clipboard-content-value="<%= asset.url %>"
+  <div class="flex flex-wrap items-center gap-2">
+    <button type="button" class="<%= ui(:button, :small) %>" data-controller="copy-to-clipboard" data-copy-to-clipboard-content-value="<%= asset.url %>"
       data-copy-to-clipboard-success-class="btn--success" data-action="copy-to-clipboard#copy">
-      <%= icon_tag "copy-paste" %>
+      <%= icon_tag "copy-paste", class: "size-4" %>
       <span>Copy URL</span>
     </button>
-    <%= link_to rails_blob_path(asset.file, disposition: "attachment"), class: "btn txt-small", data: { turbo: false } do %>
+    <%= link_to rails_blob_path(asset.file, disposition: "attachment"), class: ui(:button, :small), data: { turbo: false } do %>
       <span>Download</span>
     <% end %>
     <% if Current.user.can?("assets:delete") %>
       <%= render "layouts/shared/delete_dialog", name: asset.title, path: file_manager_asset_path(asset),
-            message: "It goes to the trash, where it can be restored.", trigger_text: "Delete permanently" %>
+            message: "It goes to the trash, where it can be restored.", trigger_text: "Move to trash", trigger_class: "ml-auto text-sm" %>
     <% end %>
   </div>
 
   <%= render "layouts/shared/errors", record: asset %>
-  <%= form_with model: asset, url: file_manager_asset_path(asset), scope: :asset, class: "flex flex-column gap" do |form| %>
-    <%= tag.fieldset class: "settings-fieldset flex flex-column gap", disabled: !can_write do %>
-      <label class="flex flex-column gap-half">
-        <span class="txt-small font-weight-bold">Alternative text</span>
-        <%= form.text_area :alt, rows: 2, class: "input full-width", placeholder: "What the image shows, for people who can’t see it." %>
-        <span class="txt-x-small txt-subtle">Read aloud by screen readers, and shown when the image can’t load. Leave it empty if the image is purely decorative.</span>
+  <%= form_with model: asset, url: file_manager_asset_path(asset), scope: :asset do |form| %>
+    <%= tag.fieldset class: "flex flex-col gap-5", disabled: !can_write do %>
+      <label class="flex flex-col gap-1.5">
+        <span class="<%= ui(:label) %>">Alternative text</span>
+        <%= form.text_area :alt, rows: 2, class: "w-full", placeholder: "What the image shows, for people who can’t see it." %>
+        <span class="<%= ui(:help) %>">Read aloud by screen readers, and shown when the image can’t load. Leave it empty if the image is purely decorative.</span>
       </label>
-      <label class="flex flex-column gap-half">
-        <span class="txt-small font-weight-bold">Title</span>
-        <%= form.text_field :name, placeholder: asset.filename, class: "input full-width", autocomplete: "off" %>
+      <label class="flex flex-col gap-1.5">
+        <span class="<%= ui(:label) %>">Title</span>
+        <%= form.text_field :name, placeholder: asset.filename, class: "w-full", autocomplete: "off" %>
       </label>
-      <label class="flex flex-column gap-half">
-        <span class="txt-small font-weight-bold">Caption</span>
-        <%= form.text_area :caption, rows: 2, class: "input full-width" %>
-        <span class="txt-x-small txt-subtle">Shown with it on the site, where the site shows captions.</span>
+      <label class="flex flex-col gap-1.5">
+        <span class="<%= ui(:label) %>">Caption</span>
+        <%= form.text_area :caption, rows: 2, class: "w-full" %>
+        <span class="<%= ui(:help) %>">Shown with it on the site, where the site shows captions.</span>
       </label>
-      <label class="flex flex-column gap-half">
-        <span class="txt-small font-weight-bold">Description</span>
-        <%= form.text_area :description, rows: 3, class: "input full-width" %>
+      <label class="flex flex-col gap-1.5">
+        <span class="<%= ui(:label) %>">Description</span>
+        <%= form.text_area :description, rows: 3, class: "w-full" %>
       </label>
-      <label class="flex flex-column gap-half">
-        <span class="txt-small font-weight-bold">Folder</span>
-        <%= form.select :folder, options_for_select([["Top level", "/"]] + folders.map { [it, it] }, asset.folder), {}, class: "input input--select full-width" %>
+      <label class="flex flex-col gap-1.5">
+        <span class="<%= ui(:label) %>">Folder</span>
+        <%= form.select :folder, options_for_select([["Top level", "/"]] + folders.map { [it, it] }, asset.folder), {}, class: "w-full" %>
       </label>
-      <div class="media-details__save">
-        <%= form.button "Save", class: "btn btn--link" %>
-      </div>
+      <% if can_write %>
+        <div>
+          <%= form.button "Save", class: ui(:button, :primary) %>
+        </div>
+      <% end %>
     <% end %>
   <% end %>
 
-  <section class="flex flex-column gap-half">
-    <h3 class="divider txt-medium">Used in</h3>
+  <section class="flex flex-col gap-2 border-t border-gray-200 pt-5">
+    <h3 class="<%= ui(:heading) %>">Used in</h3>
     <% if usages.any? %>
-      <ul class="margin-none txt-small">
+      <ul class="flex flex-col gap-1 text-sm">
         <% usages.each do |record| %>
           <%# herb:key record.class.name + record.id.to_s %>
-          <li><%= link_to record.try(:title).presence || record.try(:slug) || record.class.name, admin_record_path(record), class: "txt-link", data: { turbo_frame: "_top" } %> <span class="txt-subtle"><%= record.class.model_name.human %></span></li>
+          <li>
+            <%= link_to record.try(:title).presence || record.try(:slug) || record.class.name, admin_record_path(record), class: ui(:link), data: { turbo_frame: "_top" } %>
+            <span class="text-gray-500"><%= record.class.model_name.human %></span>
+          </li>
         <% end %>
       </ul>
     <% else %>
-      <p class="txt-small txt-subtle margin-none">Nothing on the site uses it yet.</p>
+      <p class="text-sm text-gray-500">Nothing on the site uses it yet.</p>
     <% end %>
   </section>
 </div>

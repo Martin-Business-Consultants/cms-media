@@ -1,20 +1,23 @@
 <%# locals: (asset:, selectable:) %>
-<%# One file in the library's grid, as WordPress shows it: a square of the
-    picture (or, for any other file, its icon and name). Picking it opens its
-    details in the library's sheet; in Bulk select, the square is its tick. %>
-<div id="<%= dom_id(asset) %>" class="media-tile" data-filter-target="item">
-  <%= link_to file_manager_asset_path(asset), class: "media-tile__link", title: asset.title,
+<%# One file in the library's grid, as Payload shows it: a square of the
+    picture (or, for any other file, its icon), its name and what it is
+    under it. Picking it opens its details in the library's sheet; in Bulk
+    select, the whole tile is its tick (file-manager.css). %>
+<div id="<%= dom_id(asset) %>" class="media-tile relative min-w-0" data-filter-target="item">
+  <%= link_to file_manager_asset_path(asset), class: "flex flex-col gap-2 rounded-lg text-left outline-none", title: asset.title,
         data: { turbo_frame: "asset_details", action: "dialog#open" } do %>
-    <span class="media-tile__thumb"><%= asset_thumbnail asset, size: 320 %></span>
-    <% unless asset.image? %>
-      <span class="media-tile__name"><%= asset.filename %></span>
-    <% end %>
-    <span class="for-screen-reader"><%= asset.title %></span>
+    <span class="media-thumb flex aspect-square w-full items-center justify-center overflow-hidden rounded-lg border border-gray-200 bg-gray-50 text-gray-400">
+      <%= asset_thumbnail asset, size: 320 %>
+    </span>
+    <span class="flex min-w-0 flex-col gap-0.5 px-0.5">
+      <span class="truncate text-sm font-medium text-gray-900"><%= asset.title %></span>
+      <span class="truncate text-xs text-gray-500"><%= asset_meta(asset) %></span>
+    </span>
   <% end %>
   <% if selectable %>
-    <label class="media-tile__select">
-      <input type="checkbox" name="ids[]" value="<%= asset.id %>" form="assets_bulk" class="media-tile__tick">
-      <span class="for-screen-reader">Select <%= asset.title %></span>
+    <label class="media-tile__select absolute inset-0 z-10 cursor-pointer rounded-lg">
+      <input type="checkbox" name="ids[]" value="<%= asset.id %>" form="assets_bulk" class="absolute right-2 top-2">
+      <span class="sr-only">Select <%= asset.title %></span>
     </label>
   <% end %>
 </div>

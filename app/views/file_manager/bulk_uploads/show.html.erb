@@ -1,35 +1,38 @@
 <% @page_title = "Unpacking a zip" %>
-<%= parent_page "File manager", file_manager_path(folder: @bulk_upload.folder == "/" ? nil : @bulk_upload.folder) %>
+<% folder_path = file_manager_path(folder: @bulk_upload.folder == "/" ? nil : @bulk_upload.folder) %>
+<%= parent_page "Media Library", folder_path %>
 
 <%= render "layouts/shared/page_header", title: "Unpacking into " + @bulk_upload.folder %>
 
-<%= tag.section class: "panel shadow center tool-page flex flex-column gap txt-align-start",
+<%= tag.section class: ui(:panel, "flex max-w-2xl flex-col gap-4 p-6"),
       data: ({ controller: "refresh", refresh_interval_value: 2 } unless @bulk_upload.finished?) do %>
-  <p class="txt-small margin-none">
+  <p class="flex flex-wrap items-center gap-2 text-sm text-gray-700">
     <%= status_tag @bulk_upload.status.humanize %>
-    <%= @bulk_upload.processed %> of <%= @bulk_upload.total.positive? ? @bulk_upload.total : "…" %> files looked at ·
-    <%= @bulk_upload.succeeded %> added · <%= @bulk_upload.skipped %> skipped · <%= @bulk_upload.failed %> failed
+    <span>
+      <%= @bulk_upload.processed %> of <%= @bulk_upload.total.positive? ? @bulk_upload.total : "…" %> files looked at ·
+      <%= @bulk_upload.succeeded %> added · <%= @bulk_upload.skipped %> skipped · <%= @bulk_upload.failed %> failed
+    </span>
   </p>
-  <progress class="full-width" max="100" value="<%= @bulk_upload.progress %>"><%= @bulk_upload.progress %>%</progress>
+  <progress class="w-full" max="100" value="<%= @bulk_upload.progress %>"><%= @bulk_upload.progress %>%</progress>
 
   <% if @bulk_upload.errors_log.present? %>
-    <section class="flex flex-column gap-half">
-      <h2 class="divider txt-medium">Couldn’t add</h2>
-      <ul class="margin-none txt-small">
+    <section class="flex flex-col gap-2 border-t border-gray-200 pt-4">
+      <h2 class="<%= ui(:heading) %>">Couldn’t add</h2>
+      <ul class="flex flex-col gap-1 text-sm text-gray-700">
         <% @bulk_upload.errors_log.each_with_index do |failure, index| %>
           <%# herb:key index %>
-          <li><span class="font-mono"><%= failure["filename"] %></span> — <%= failure["message"] %></li>
+          <li><span class="font-mono text-xs"><%= failure["filename"] %></span> — <%= failure["message"] %></li>
         <% end %>
       </ul>
     </section>
   <% end %>
 
   <% if @bulk_upload.finished? %>
-    <%= link_to file_manager_path(folder: @bulk_upload.folder == "/" ? nil : @bulk_upload.folder), class: "btn btn--link" do %>
+    <%= link_to folder_path, class: ui(:button, :primary, "self-start") do %>
       <span>See the folder</span>
-      <%= icon_tag "arrow-right" %>
+      <%= icon_tag "arrow-right", class: "size-4" %>
     <% end %>
   <% else %>
-    <p class="txt-x-small txt-subtle margin-none">This page updates itself. You can leave it; the unpacking carries on.</p>
+    <p class="<%= ui(:help) %>">This page updates itself. You can leave it; the unpacking carries on.</p>
   <% end %>
 <% end %>

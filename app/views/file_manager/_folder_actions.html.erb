@@ -1,28 +1,29 @@
 <%# locals: (folder:, can_delete:) %>
-<%# Making a folder inside this one; renaming or deleting this one. %>
-<div class="file-manager__folder-actions flex flex-wrap align-center gap-half">
+<%# Making a folder inside this one; renaming or deleting this one. An open
+    form takes the row's whole width (.file-manager__inline-form). %>
+<div class="flex flex-wrap items-center gap-2">
   <details class="file-manager__inline-form">
-    <summary class="btn txt-small">
-      <%= icon_tag "add" %>
+    <summary class="<%= ui(:button, "cursor-pointer") %>">
+      <%= icon_tag "add", class: "size-4" %>
       <span>New folder</span>
     </summary>
-    <%= form_with url: file_manager_folder_path, class: "flex align-center gap-half margin-block-start-half", namespace: "new_folder" do |form| %>
+    <%= form_with url: file_manager_folder_path, class: "mt-2 flex items-center gap-2", namespace: "new_folder" do |form| %>
       <%= form.hidden_field :parent, value: folder %>
-      <%= form.text_field :name, required: true, placeholder: "e.g. Logos", class: "input txt-small", autocomplete: "off", aria: { label: "Folder name" } %>
-      <button type="submit" class="btn txt-small">Create</button>
+      <%= form.text_field :name, required: true, placeholder: "e.g. Logos", class: "w-full max-w-xs", autocomplete: "off", aria: { label: "Folder name" } %>
+      <button type="submit" class="<%= ui(:button) %>">Create</button>
     <% end %>
   </details>
 
   <% if folder != "/" %>
     <details class="file-manager__inline-form">
-      <summary class="btn txt-small">
-        <%= icon_tag "pencil" %>
+      <summary class="<%= ui(:button, "cursor-pointer") %>">
+        <%= icon_tag "pencil", class: "size-4" %>
         <span>Rename folder</span>
       </summary>
-      <%= form_with url: file_manager_folder_path, method: :patch, class: "flex align-center gap-half margin-block-start-half", namespace: "rename_folder" do |form| %>
+      <%= form_with url: file_manager_folder_path, method: :patch, class: "mt-2 flex items-center gap-2", namespace: "rename_folder" do |form| %>
         <%= form.hidden_field :path, value: folder %>
-        <%= form.text_field :name, value: AssetFolders.name(folder), required: true, class: "input txt-small", autocomplete: "off", aria: { label: "New name" } %>
-        <button type="submit" class="btn txt-small">Rename</button>
+        <%= form.text_field :name, value: AssetFolders.name(folder), required: true, class: "w-full max-w-xs", autocomplete: "off", aria: { label: "New name" } %>
+        <button type="submit" class="<%= ui(:button) %>">Rename</button>
       <% end %>
     </details>
     <% if can_delete %>

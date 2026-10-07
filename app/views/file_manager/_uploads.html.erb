@@ -1,32 +1,34 @@
 <%# locals: (folder:) %>
 <%# Uploading into the folder being looked at. Files go straight to storage
     (Active Storage direct uploads) and the form submits their signed ids;
-    the direct-upload controller shows each file's progress. %>
-<%= form_with url: file_manager_assets_path, class: "file-manager__upload", data: { controller: "form media--direct-upload" } do |form| %>
+    the direct-upload controller lists each file's progress under the button. %>
+<% progress_classes = "absolute left-0 top-full z-20 mt-2 flex w-72 flex-col gap-1.5 rounded-xl border border-gray-200 bg-white p-3 text-xs text-gray-700 shadow-overlay" %>
+<%= form_with url: file_manager_assets_path, class: "relative", data: { controller: "form media--direct-upload" } do |form| %>
   <%= form.hidden_field :folder, value: folder, id: nil, data: { media__file_drop_target: "filesFolder" } %>
-  <label class="btn btn--labelled" title="Upload files">
-    <%= icon_tag "add" %>
+  <label class="<%= ui(:button, :primary, "cursor-pointer") %>" title="Upload files">
+    <%= icon_tag "add", class: "size-4" %>
     <span>Upload files</span>
     <%= form.file_field :files, multiple: true, direct_upload: true, hidden: true,
           data: { action: "change->form#submit", media__direct_upload_target: "input", media__file_drop_target: "filesInput" } %>
   </label>
-  <ul class="file-manager__progress margin-none" data-media--direct-upload-target="list" hidden></ul>
+  <ul class="<%= progress_classes %>" data-media--direct-upload-target="list" hidden></ul>
 <% end %>
 
-<details class="file-manager__zip" data-media--file-drop-target="zipBox">
-  <summary class="btn btn--labelled" title="Upload a zip of images">
-    <%= icon_tag "package" %>
+<details class="sm:relative" data-media--file-drop-target="zipBox">
+  <summary class="<%= ui(:button, "cursor-pointer") %>" title="Upload a zip of images">
+    <%= icon_tag "package", class: "size-4" %>
     <span>Upload a zip</span>
   </summary>
-  <%= form_with url: file_manager_bulk_uploads_path, class: "popup panel fill-white shadow flex flex-column gap-half txt-align-start", data: { controller: "media--direct-upload" } do |form| %>
+  <%= form_with url: file_manager_bulk_uploads_path, class: "absolute left-0 z-20 mt-2 flex w-80 sm:left-auto sm:right-0 sm:top-full flex-col gap-3 rounded-xl border border-gray-200 bg-white p-4 text-left shadow-overlay",
+        data: { controller: "media--direct-upload" } do |form| %>
     <%= form.hidden_field :folder, value: folder, id: nil, data: { media__file_drop_target: "zipFolder" } %>
-    <p class="txt-small margin-none">A .zip of images, each turned into a WebP in <strong><%= folder %></strong>. HEIC, AVIF, JPEG, PNG, GIF and TIFF all work.</p>
-    <%= form.file_field :archive, accept: ".zip,application/zip", direct_upload: true, required: true, class: "input full-width",
+    <p class="text-sm text-gray-600">A .zip of images, each turned into a WebP in <strong class="font-medium text-gray-900"><%= folder %></strong>. HEIC, AVIF, JPEG, PNG, GIF and TIFF all work.</p>
+    <%= form.file_field :archive, accept: ".zip,application/zip", direct_upload: true, required: true, class: "w-full",
           data: { media__direct_upload_target: "input", media__file_drop_target: "zipInput" } %>
-    <ul class="file-manager__progress margin-none" data-media--direct-upload-target="list" hidden></ul>
-    <button type="submit" class="btn btn--link">
+    <ul class="flex flex-col gap-1.5 text-xs text-gray-700" data-media--direct-upload-target="list" hidden></ul>
+    <button type="submit" class="<%= ui(:button, "self-start") %>">
       <span>Unpack into this folder</span>
-      <%= icon_tag "arrow-right" %>
+      <%= icon_tag "arrow-right", class: "size-4" %>
     </button>
   <% end %>
 </details>
