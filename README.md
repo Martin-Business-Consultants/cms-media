@@ -1,6 +1,6 @@
 # Media
 
-A plugin for the CMS (see `docs/plugins.md` in [opencms](https://github.com/Martin-Business-Consultants/opencms)),
+A plugin for the CMS (see `docs/plugins.md` in [LibrePublish CMS](https://github.com/Martin-Business-Consultants/cmsv2)),
 installed by default (`config/default_plugins.yml`).
 
 The media library at `/media`: files and images in folders, uploading them one
