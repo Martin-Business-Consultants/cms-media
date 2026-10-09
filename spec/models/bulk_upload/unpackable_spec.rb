@@ -38,6 +38,54 @@ RSpec.describe BulkUpload::Unpackable do
     expect(bulk_upload.errors_log.first["filename"]).to eq("broken.png")
   end
 
+  describe "an untrusted archive" do
+    it "refuses an image that unpacks past MAX_ENTRY_BYTES, counting what it decompresses to, and goes on" do
+      stub_const("BulkUpload::Unpackable::MAX_ENTRY_BYTES", 1_000)
+      bulk_upload = BulkUpload.start(archive("big.png" => PNG_1PX + ("\0" * 5_000), "ok.png" => PNG_1PX), folder: "/", user: nil)
+
+      bulk_upload.unpack_now
+
+      expect(bulk_upload.reload).to have_attributes(status: "partial", succeeded: 1, failed: 1)
+      expect(bulk_upload.errors_log.first).to include("filename" => "big.png", "message" => a_string_including("unpacked"))
+    end
+
+    it "stops the whole upload once the archive unpacks past MAX_TOTAL_BYTES" do
+      stub_const("BulkUpload::Unpackable::MAX_TOTAL_BYTES", PNG_1PX.bytesize + 10)
+      bulk_upload = BulkUpload.start(archive("a.png" => PNG_1PX, "b.png" => PNG_1PX, "c.png" => PNG_1PX), folder: "/", user: nil)
+
+      expect { bulk_upload.unpack_now }.to raise_error(BulkUpload::Unpackable::TooLarge, /unpacks to more than/)
+      expect(bulk_upload.reload.status).to eq("failed")
+      expect(Asset.count).to eq(1)
+    end
+
+    it "refuses an archive with more than MAX_ENTRIES images before reading any" do
+      stub_const("BulkUpload::Unpackable::MAX_ENTRIES", 2)
+      bulk_upload = BulkUpload.start(archive("a.png" => PNG_1PX, "b.png" => PNG_1PX, "c.png" => PNG_1PX), folder: "/", user: nil)
+
+      expect { bulk_upload.unpack_now }.to raise_error(BulkUpload::Unpackable::TooLarge, /3 images; the limit is 2/)
+      expect(bulk_upload.reload.status).to eq("failed")
+      expect(Asset.count).to eq(0)
+    end
+
+    it "refuses an image whose header claims more than MAX_PIXELS, without decoding it" do
+      stub_const("BulkUpload::Unpackable::MAX_PIXELS", 0)
+      bulk_upload = BulkUpload.start(archive("a.png" => PNG_1PX), folder: "/", user: nil)
+
+      bulk_upload.unpack_now
+
+      expect(bulk_upload.reload).to have_attributes(status: "failed", failed: 1)
+      expect(bulk_upload.errors_log.first["message"]).to include("pixels")
+    end
+
+    it "uses only an entry's base name, so a path in it goes nowhere" do
+      bulk_upload = BulkUpload.start(archive("../../etc/Evil.png" => PNG_1PX), folder: "/safe", user: nil)
+
+      bulk_upload.unpack_now
+
+      expect(Asset.pluck(:name, :folder)).to eq([["evil", "/safe"]])
+    end
+  end
+
   it "marks the whole upload failed when the run itself fails" do
     bulk_upload = BulkUpload.create!(folder: "/", status: "pending")
 
