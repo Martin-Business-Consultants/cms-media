@@ -7,21 +7,24 @@ module Media
   class Engine < ::Rails::Engine
     initializer "media.routes" do |app|
       app.routes.append do
-        # The library, at /media. Folders are paths on assets (AssetFolders);
-        # the folder resource is addressed by ?path=. The route helpers keep
-        # the file_manager name; /file_manager links from before land here.
-        get "media", to: "file_manager#index", as: :file_manager
-        get "file_manager(/*rest)", to: redirect { |params, request| "/media#{"/" + params[:rest] if params[:rest]}#{"?" + request.query_string if request.query_string.present?}" }
-        namespace :file_manager, path: "media" do
-          resources :assets, only: [:show, :create, :update, :destroy]
-          resource :folder, only: [:create, :update, :destroy]
-          resources :moves, only: :create
-          resources :bulk_deletions, only: :create
-          resources :bulk_uploads, only: [:create, :show]
-        end
+        admin = proc do
+          # The library, at /cms/media (/media on a core from before /cms). Folders are paths on assets (AssetFolders);
+          # the folder resource is addressed by ?path=. The route helpers keep
+          # the file_manager name; /file_manager links from before land here.
+          get "media", to: "file_manager#index", as: :file_manager
+          get "file_manager(/*rest)", to: redirect { |params, request| "#{"/#{Cms::PATH}" if defined?(Cms::PATH)}/media#{"/" + params[:rest] if params[:rest]}#{"?" + request.query_string if request.query_string.present?}" }
+          namespace :file_manager, path: "media" do
+            resources :assets, only: [:show, :create, :update, :destroy]
+            resource :folder, only: [:create, :update, :destroy]
+            resources :moves, only: :create
+            resources :bulk_deletions, only: :create
+            resources :bulk_uploads, only: [:create, :show]
+          end
 
-        # The picker a content form's asset fields open.
-        resource :asset_picker, only: [:show, :create]
+          # The picker a content form's asset fields open.
+          resource :asset_picker, only: [:show, :create]
+        end
+        defined?(Cms::PATH) ? scope(path: Cms::PATH, &admin) : admin.call
 
         namespace :api, defaults: {format: :json} do
           resources :assets, only: [:index, :create, :show, :update, :destroy]
