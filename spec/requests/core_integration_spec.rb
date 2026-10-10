@@ -140,7 +140,7 @@ RSpec.describe "Media in the core", type: :request do
     Asset.create!(name: "x.png", folder: "/brand/logos", file: {io: StringIO.new("x"), filename: "x.png", content_type: "image/png"})
 
     from_api = rows_from { patch "/api/asset_folders", params: {path: "brand/logos", to: "brand/marks/"}, headers: api, as: :json }
-    from_admin = admin_rows { patch "/media/folder", params: {path: "/brand/marks", to: "/brand/logos"} }
+    from_admin = admin_rows { patch file_manager_folder_path, params: {path: "/brand/marks", to: "/brand/logos"} }
 
     expect(from_api.first).to eq(["asset_folder.renamed", {"from" => "/brand/logos", "to" => "/brand/marks", "moved" => 1}])
     expect(from_admin.first).to eq(["asset_folder.renamed", {"from" => "/brand/marks", "to" => "/brand/logos", "moved" => 1}])
