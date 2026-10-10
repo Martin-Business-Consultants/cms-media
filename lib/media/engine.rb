@@ -47,7 +47,7 @@ module Media
     end
 
     config.to_prepare do
-      Cms::Plugins.register :media, name: "Media", version: "1.0.0", author: "Martin Business Consultants",
+      Cms::Plugins.register :media, name: "Media", version: "1.1.0", author: "Martin Business Consultants",
         enabled_by_default: true, requires: ">= 1.0",
         description: "The media library: files and images in folders, uploading them one by one or as a zip, " \
                      "the picker asset fields open, and /api/assets.",
