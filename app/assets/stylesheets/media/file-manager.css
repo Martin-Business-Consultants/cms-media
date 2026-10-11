@@ -1,12 +1,273 @@
 /* The media library (file_manager/index), its asset picker and dropping files
-   on it: only what the markup's classes can't say. */
+   on it. The Media plugin's stylesheet: it loads where the plugin shows. */
 @layer components {
-  /* A thumbnail's square (.media-thumb) fills with the picture:
-     asset_thumbnail draws a bare <img>. */
+  /* The library: its toolbar, folders, files and the bulk actions, 16px
+     apart. */
+  .media-library {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+  }
+
+  /* One row: the search, the filters, Bulk select and the view switch. The
+     search takes what room is left, and its own row on a phone. */
+  .media-toolbar {
+    align-items: center;
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+  }
+
+  .media-toolbar__search {
+    inline-size: 100%;
+
+    @media (width >= 40rem) {
+      flex: 1;
+      inline-size: auto;
+    }
+  }
+
+  /* Grid or list: two icon links in a box, the current one shaded. */
+  .view-switch {
+    align-items: center;
+    background-color: var(--surface);
+    border: 1px solid var(--gray-300);
+    border-radius: var(--radius-md);
+    display: inline-flex;
+    gap: var(--space-0-5);
+    padding: var(--space-0-5);
+  }
+
+  .view-switch__link {
+    align-items: center;
+    block-size: 1.75rem;
+    border-radius: var(--radius-sm);
+    color: var(--gray-500);
+    display: inline-flex;
+    inline-size: 1.75rem;
+    justify-content: center;
+
+    &:hover {
+      color: var(--gray-900);
+    }
+
+    &[aria-current] {
+      background-color: var(--gray-100);
+      color: var(--gray-900);
+    }
+  }
+
+  /* The drop zone, always there above the library. */
+  .upload-zone {
+    align-items: center;
+    background-color: var(--gray-50);
+    border: 2px dashed var(--gray-300);
+    border-radius: var(--radius-xl);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    justify-content: center;
+    padding: var(--space-6);
+    text-align: center;
+  }
+
+  .upload-zone__badge {
+    --icon-size: 1.25rem;
+
+    align-items: center;
+    background-color: var(--surface);
+    block-size: var(--space-10);
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius-full);
+    color: var(--gray-500);
+    display: flex;
+    inline-size: var(--space-10);
+    justify-content: center;
+  }
+
+  /* Upload's progress, and the zip's form, open under their buttons. */
+  .upload-anchor {
+    position: relative;
+  }
+
+  .upload-popover {
+    background-color: var(--surface);
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-overlay);
+    display: flex;
+    flex-direction: column;
+    inset: calc(100% + var(--space-2)) auto auto 0;
+    position: absolute;
+    text-align: start;
+    z-index: 20;
+  }
+
+  .upload-popover--progress {
+    gap: var(--space-1-5);
+    inline-size: 18rem;
+    padding: var(--space-3);
+  }
+
+  .upload-popover--zip {
+    gap: var(--space-3);
+    inline-size: 20rem;
+    padding: var(--space-4);
+
+    @media (width >= 40rem) {
+      inset-inline: auto 0;
+    }
+  }
+
+  @media (width >= 40rem) {
+    .upload-anchor--wide {
+      position: relative;
+    }
+  }
+
+  /* A file's progress as it uploads (media--direct-upload builds the rows). */
+  .upload-list {
+    color: var(--gray-700);
+    display: flex;
+    flex-direction: column;
+    font-size: var(--text-xs);
+    gap: var(--space-1-5);
+    line-height: var(--leading-xs);
+  }
+
+  .upload-list__item {
+    align-items: center;
+    display: flex;
+    gap: var(--space-2);
+  }
+
+  .upload-list__item--failed {
+    color: var(--red-600);
+  }
+
+  .upload-list__name {
+    flex: 1;
+    min-inline-size: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .upload-list__bar {
+    flex-shrink: 0;
+    inline-size: 6rem;
+  }
+
+  /* A folder in the library: a box with its icon and name. */
+  .folder-link {
+    --icon-size: 1rem;
+
+    align-items: center;
+    background-color: var(--surface);
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius-lg);
+    color: var(--gray-900);
+    display: flex;
+    font-size: var(--text-sm);
+    font-weight: var(--weight-medium);
+    gap: var(--space-2);
+    line-height: var(--leading-sm);
+    padding: var(--space-2-5) var(--space-3);
+
+    &:hover {
+      background-color: var(--gray-50);
+      border-color: var(--gray-300);
+    }
+
+    > .icon {
+      color: var(--gray-400);
+    }
+  }
+
+  /* A thumbnail's box: the picture fills it (asset_thumbnail draws a bare
+     <img>), or a file's icon sits in its middle. --square for a tile's,
+     --row for a list row's 40px one. */
+  .media-thumb {
+    align-items: center;
+    background-color: var(--gray-50);
+    border: 1px solid var(--gray-200);
+    color: var(--gray-400);
+    display: flex;
+    justify-content: center;
+    overflow: hidden;
+  }
+
+  .media-thumb--square {
+    aspect-ratio: 1 / 1;
+    border-radius: var(--radius-lg);
+    inline-size: 100%;
+  }
+
+  .media-thumb--row {
+    block-size: var(--space-10);
+    border-radius: var(--radius-md);
+    flex-shrink: 0;
+    inline-size: var(--space-10);
+  }
+
   .media-thumb img {
     block-size: 100%;
     inline-size: 100%;
     object-fit: cover;
+  }
+
+  /* The grid of files: as many 10rem tiles as fit, 20px between rows. */
+  .media-grid {
+    row-gap: var(--space-5);
+  }
+
+  /* One file in the grid: its square, its name and what it is. */
+  .media-tile {
+    min-inline-size: 0;
+    position: relative;
+  }
+
+  .media-tile__link {
+    border-radius: var(--radius-lg);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    outline: none;
+    text-align: start;
+  }
+
+  .media-tile__text {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-0-5);
+    min-inline-size: 0;
+    padding-inline: var(--space-0-5);
+  }
+
+  .media-tile__name {
+    color: var(--gray-900);
+    font-size: var(--text-sm);
+    font-weight: var(--weight-medium);
+    line-height: var(--leading-sm);
+  }
+
+  .media-tile__meta {
+    color: var(--gray-500);
+    font-size: var(--text-xs);
+    line-height: var(--leading-xs);
+  }
+
+  .media-tile__select {
+    border-radius: var(--radius-lg);
+    cursor: pointer;
+    inset: 0;
+    position: absolute;
+    z-index: 10;
+
+    > input {
+      inset: var(--space-2) var(--space-2) auto auto;
+      position: absolute;
+    }
   }
 
   /* A tile (in the grid, or the picker's) rings its square while it's
@@ -15,13 +276,19 @@
   .media-tile:focus-visible .media-thumb,
   .media-tile:has(:focus-visible) .media-thumb,
   .media-library:has([data-media-bulk]:checked) .media-tile:has(:checked) .media-thumb {
-    outline: 2px solid var(--color-blue-600);
+    outline: 2px solid var(--accent-600);
     outline-offset: 2px;
   }
 
   /* The pagination frames the grid loads into lay their tiles out in it. */
   .media-grid turbo-frame {
     display: contents;
+  }
+
+  /* The grid with nothing in it: one quiet line in a box. */
+  .media-library__empty {
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius-xl);
   }
 
   /* Bulk select: a checkbox dressed as a button. Ticked, it reads Cancel,
@@ -46,7 +313,16 @@
   }
 
   .media-bulk-actions {
+    align-items: center;
+    background-color: var(--gray-50);
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius-lg);
     display: flex;
+    flex-wrap: wrap;
+    font-size: var(--text-sm);
+    gap: var(--space-2);
+    line-height: var(--leading-sm);
+    padding: var(--space-2) var(--space-3);
   }
 
   .media-library:has([data-media-bulk]:not(:checked)) .media-bulk-actions {
@@ -57,11 +333,33 @@
     display: none;
   }
 
-  /* A file's details: the picture, whole, at most half the screen tall. */
-  .media-details__preview img {
-    max-block-size: 50dvh;
-    max-inline-size: 100%;
-    object-fit: contain;
+  /* A file's details: the picture, whole, at most half the screen tall, in
+     a gray box. */
+  .media-details__preview {
+    align-items: center;
+    background-color: var(--gray-50);
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius-lg);
+    color: var(--gray-400);
+    display: flex;
+    justify-content: center;
+    min-block-size: 10rem;
+    padding: var(--space-3);
+
+    img {
+      max-block-size: 50dvh;
+      max-inline-size: 100%;
+      object-fit: contain;
+    }
+  }
+
+  /* A section under a rule (the details' Used in, a job's failures). */
+  .media-section {
+    border-block-start: 1px solid var(--gray-200);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    padding-block-start: var(--space-5);
   }
 
   /* New folder / Rename folder: open, the form takes the row's width. */
@@ -69,16 +367,48 @@
     flex-basis: 100%;
   }
 
+  .file-manager__inline-form > form {
+    margin-block-start: var(--space-2);
+
+    > input {
+      inline-size: 100%;
+      max-inline-size: 20rem;
+    }
+  }
+
   /* Files dragged over the library (file_drop_controller): the overlay shows
      (it toggles [hidden]) over a faint wash of the accent, and the folder
      they'd land in is ringed. */
+  .file-drop {
+    position: relative;
+  }
+
   .file-drop__overlay {
-    background-color: color-mix(in oklch, var(--color-blue-600) 8%, transparent);
+    align-items: center;
+    background-color: color-mix(in oklch, var(--accent-600) 8%, transparent);
+    border: 2px dashed var(--accent-600);
+    border-radius: var(--radius-xl);
     display: flex;
+    inset: 0;
+    justify-content: center;
+    pointer-events: none;
+    position: absolute;
+    z-index: 30;
+  }
+
+  .file-drop__message {
+    background-color: var(--surface);
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-overlay);
+    color: var(--gray-900);
+    font-size: var(--text-sm);
+    line-height: var(--leading-sm);
+    padding: var(--space-3) var(--space-4);
   }
 
   .file-drop__folder--over {
-    outline: 2px solid var(--color-blue-600);
+    outline: 2px solid var(--accent-600);
     outline-offset: 2px;
   }
 }

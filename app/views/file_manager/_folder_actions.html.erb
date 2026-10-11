@@ -1,29 +1,29 @@
 <%# locals: (folder:, can_delete:) %>
 <%# Making a folder inside this one; renaming or deleting this one. An open
     form takes the row's whole width (.file-manager__inline-form). %>
-<div class="flex flex-wrap items-center gap-2">
+<div class="cluster">
   <details class="file-manager__inline-form">
-    <summary class="<%= ui(:button, "cursor-pointer") %>">
-      <%= icon_tag "add", class: "size-4" %>
+    <summary class="btn">
+      <%= icon_tag "add" %>
       <span>New folder</span>
     </summary>
-    <%= form_with url: file_manager_folder_path, class: "mt-2 flex items-center gap-2", namespace: "new_folder" do |form| %>
+    <%= form_with url: file_manager_folder_path, class: "row", namespace: "new_folder" do |form| %>
       <%= form.hidden_field :parent, value: folder %>
-      <%= form.text_field :name, required: true, placeholder: "e.g. Logos", class: "w-full max-w-xs", autocomplete: "off", aria: { label: "Folder name" } %>
-      <button type="submit" class="<%= ui(:button) %>">Create</button>
+      <%= form.text_field :name, required: true, placeholder: "e.g. Logos", autocomplete: "off", aria: { label: "Folder name" } %>
+      <button type="submit" class="btn">Create</button>
     <% end %>
   </details>
 
   <% if folder != "/" %>
     <details class="file-manager__inline-form">
-      <summary class="<%= ui(:button, "cursor-pointer") %>">
-        <%= icon_tag "pencil", class: "size-4" %>
+      <summary class="btn">
+        <%= icon_tag "pencil" %>
         <span>Rename folder</span>
       </summary>
-      <%= form_with url: file_manager_folder_path, method: :patch, class: "mt-2 flex items-center gap-2", namespace: "rename_folder" do |form| %>
+      <%= form_with url: file_manager_folder_path, method: :patch, class: "row", namespace: "rename_folder" do |form| %>
         <%= form.hidden_field :path, value: folder %>
-        <%= form.text_field :name, value: AssetFolders.name(folder), required: true, class: "w-full max-w-xs", autocomplete: "off", aria: { label: "New name" } %>
-        <button type="submit" class="<%= ui(:button) %>">Rename</button>
+        <%= form.text_field :name, value: AssetFolders.name(folder), required: true, autocomplete: "off", aria: { label: "New name" } %>
+        <button type="submit" class="btn">Rename</button>
       <% end %>
     </details>
     <% if can_delete %>

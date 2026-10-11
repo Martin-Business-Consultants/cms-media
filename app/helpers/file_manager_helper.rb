@@ -10,9 +10,9 @@ module FileManagerHelper
       source = asset.variantable? && ApplicationHelper.variants_supported? ? asset.thumb_url(size) : asset.url
       image_tag source, alt: asset.alt.to_s, loading: "lazy", decoding: "async"
     elsif size >= 240
-      icon_tag "attachment", class: "size-10"
+      icon_tag "attachment", class: "icon--xl"
     else
-      icon_tag "attachment", class: "size-5"
+      icon_tag "attachment", class: "icon--md"
     end
   end
 

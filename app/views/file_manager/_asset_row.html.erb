@@ -1,25 +1,25 @@
 <%# locals: (asset:, selectable:, can_delete:) %>
-<tr id="<%= dom_id(asset) %>" class="hover:bg-gray-50" data-filter-target="item">
+<tr id="<%= dom_id(asset) %>" data-filter-target="item">
   <% if selectable %>
-    <td class="<%= ui(:td, "data-table__check") %>">
+    <td class="data-table__check">
       <input type="checkbox" data-select-all-target="box" data-action="select-all#sync" name="ids[]" value="<%= asset.id %>" form="assets_bulk" aria-label="Select <%= asset.title %>">
     </td>
   <% end %>
-  <td class="<%= ui(:td) %>">
-    <div class="flex items-center gap-3">
-      <span class="media-thumb flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-md border border-gray-200 bg-gray-50 text-gray-400">
+  <td>
+    <div class="row row--md">
+      <span class="media-thumb media-thumb--row">
         <%= asset_thumbnail asset, size: 64 %>
       </span>
-      <div class="min-w-0">
-        <%= link_to asset.title, file_manager_asset_path(asset), class: "block truncate font-medium text-gray-900 hover:underline",
+      <div class="grow">
+        <%= link_to asset.title, file_manager_asset_path(asset), class: "title-link truncate",
               data: { turbo_frame: "asset_details", action: "dialog#open" } %>
         <%= render "layouts/shared/row_links", name: asset.title, edit_path: file_manager_asset_path(asset),
               delete_path: (file_manager_asset_path(asset) if can_delete), delete_message: "It goes to the trash, where it can be restored." %>
       </div>
     </div>
   </td>
-  <td class="<%= ui(:td) %>"><span class="text-xs text-gray-500"><%= asset.content_type %></span></td>
-  <td class="<%= ui(:td) %>"><span class="font-mono text-xs text-gray-500"><%= asset.folder %></span></td>
-  <td class="<%= ui(:td, "text-right") %>"><span class="whitespace-nowrap tabular-nums"><%= number_to_human_size(asset.byte_size) %></span></td>
-  <td class="<%= ui(:td) %>"><span class="whitespace-nowrap text-xs text-gray-500"><%= time_ago_tag asset.created_at %></span></td>
+  <td><span class="text-small text-muted"><%= asset.content_type %></span></td>
+  <td><span class="text-mono text-small text-muted"><%= asset.folder %></span></td>
+  <td class="data-table__num"><span class="nowrap"><%= number_to_human_size(asset.byte_size) %></span></td>
+  <td><span class="nowrap text-small text-muted"><%= time_ago_tag asset.created_at %></span></td>
 </tr>

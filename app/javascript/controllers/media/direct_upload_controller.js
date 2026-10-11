@@ -24,14 +24,14 @@ export default class extends Controller {
     const { id, file } = event.detail
     const item = document.createElement("li")
     item.id = `direct-upload-${id}`
-    item.className = "flex items-center gap-2"
+    item.className = "upload-list__item"
 
     const name = document.createElement("span")
-    name.className = "min-w-0 flex-1 truncate"
+    name.className = "upload-list__name"
     name.textContent = file.name
 
     const bar = document.createElement("progress")
-    bar.className = "w-24 shrink-0"
+    bar.className = "upload-list__bar"
     bar.max = 100
     bar.value = 0
 
@@ -49,7 +49,7 @@ export default class extends Controller {
     event.preventDefault()
     const item = this.#item(event)
     if (item) {
-      item.classList.add("text-red-600")
+      item.classList.add("upload-list__item--failed")
       item.title = event.detail.error
     }
   }

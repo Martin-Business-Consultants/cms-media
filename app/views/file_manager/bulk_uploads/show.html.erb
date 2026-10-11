@@ -4,35 +4,35 @@
 
 <%= render "layouts/shared/page_header", title: "Unpacking into " + @bulk_upload.folder %>
 
-<%= tag.section class: ui(:panel, "flex max-w-2xl flex-col gap-4 p-6"),
+<%= tag.section class: "panel panel--padded measure--lg stack",
       data: ({ controller: "refresh", refresh_interval_value: 2 } unless @bulk_upload.finished?) do %>
-  <p class="flex flex-wrap items-center gap-2 text-sm text-gray-700">
+  <p class="cluster text-body">
     <%= status_tag @bulk_upload.status.humanize %>
     <span>
       <%= @bulk_upload.processed %> of <%= @bulk_upload.total.positive? ? @bulk_upload.total : "…" %> files looked at ·
       <%= @bulk_upload.succeeded %> added · <%= @bulk_upload.skipped %> skipped · <%= @bulk_upload.failed %> failed
     </span>
   </p>
-  <progress class="w-full" max="100" value="<%= @bulk_upload.progress %>"><%= @bulk_upload.progress %>%</progress>
+  <progress class="full-width" max="100" value="<%= @bulk_upload.progress %>"><%= @bulk_upload.progress %>%</progress>
 
   <% if @bulk_upload.errors_log.present? %>
-    <section class="flex flex-col gap-2 border-t border-gray-200 pt-4">
-      <h2 class="<%= ui(:heading) %>">Couldn’t add</h2>
-      <ul class="flex flex-col gap-1 text-sm text-gray-700">
+    <section class="media-section">
+      <h2 class="heading">Couldn’t add</h2>
+      <ul class="stack stack--xs text-body">
         <% @bulk_upload.errors_log.each_with_index do |failure, index| %>
           <%# herb:key index %>
-          <li><span class="font-mono text-xs"><%= failure["filename"] %></span> — <%= failure["message"] %></li>
+          <li><span class="text-mono text-small"><%= failure["filename"] %></span> — <%= failure["message"] %></li>
         <% end %>
       </ul>
     </section>
   <% end %>
 
   <% if @bulk_upload.finished? %>
-    <%= link_to folder_path, class: ui(:button, :primary, "self-start") do %>
+    <%= link_to folder_path, class: "btn btn--primary" do %>
       <span>See the folder</span>
-      <%= icon_tag "arrow-right", class: "size-4" %>
+      <%= icon_tag "arrow-right" %>
     <% end %>
   <% else %>
-    <p class="<%= ui(:help) %>">This page updates itself. You can leave it; the unpacking carries on.</p>
+    <p class="help">This page updates itself. You can leave it; the unpacking carries on.</p>
   <% end %>
 <% end %>

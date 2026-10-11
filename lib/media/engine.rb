@@ -48,7 +48,7 @@ module Media
 
     config.to_prepare do
       Cms::Plugins.register :media, name: "Media", version: "1.1.0", author: "Martin Business Consultants",
-        enabled_by_default: true, requires: ">= 1.0",
+        enabled_by_default: true, requires: ">= 1.30",
         description: "The media library: files and images in folders, uploading them one by one or as a zip, " \
                      "the picker asset fields open, and /api/assets.",
         adopt_if: -> { Asset.with_discarded.exists? }
