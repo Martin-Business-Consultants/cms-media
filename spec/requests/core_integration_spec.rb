@@ -125,6 +125,7 @@ RSpec.describe "Media in the core", type: :request do
   end
 
   it "includes a page's assets in the delivery API, with absolute URLs" do
+    serve_over_api
     BlockType.seed
     asset = Asset.create!(name: "pic.png", folder: "/", file: {io: StringIO.new("x"), filename: "pic.png", content_type: "image/png"})
     Page.create!(slug: "home", title: "Home", status: "published", blocks: [{"id" => "b1", "type" => "image", "data" => {"asset_id" => asset.id.to_s, "alt" => "a"}}])

@@ -3,7 +3,11 @@
 A plugin for the CMS (see `docs/plugins.md` in [LibrePublish CMS](https://github.com/Martin-Business-Consultants/cmsv2)),
 installed by default (`config/default_plugins.yml`).
 
-The media library at `/media`: files and images in folders, uploading them one
+Since Libre Publish 1.12 the core includes the media library itself and
+doesn't load this plugin (`InstalledPlugins::ABSORBED`); it's kept for
+installs older than that.
+
+The media library at `/cms/media`: files and images in folders, uploading them one
 by one or as a zip, the picker a content form's asset fields open, and
 `/api/assets`, `/api/asset_folders` and `/api/bulk_uploads`. It provides the
 core's media interface (`MediaLibrary`): asset field thumbnails,
